@@ -1,0 +1,6 @@
+/bin/
+*.classpath
+*.settings
+a.jpg
+output.png
+*.jpeg
