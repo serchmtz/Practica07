@@ -20,7 +20,7 @@ public class Dialogo extends Dialog {
 	        | SWT.APPLICATION_MODAL);
 	    dialog.setSize(350, 375);
 	    dialog.setText("Resultado");
-	    Image imageC = new Image(Display.getCurrent(), "output.png");
+	    Image imageC = new Image(Display.getCurrent(), "a.jpg");
 	    Label lblImg = new Label(dialog, SWT.NONE);
 		lblImg.setBounds(50, 50, 250, 250);
 		lblImg.setText("img");
