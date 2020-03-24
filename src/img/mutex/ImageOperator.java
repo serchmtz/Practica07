@@ -87,6 +87,10 @@ public class ImageOperator extends Thread {
 							break;
 						}
 					}
+					if(chunkMatrix[chunkCols - 1][chunkRows - 1]) {
+						chunkCounter = 0;
+						return;
+					}
 					if(procesando) {
 						procesar(op);					
 						chunkCounter--;
