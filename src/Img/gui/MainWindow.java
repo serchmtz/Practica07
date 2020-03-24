@@ -156,8 +156,17 @@ public class MainWindow {
 				double beta = beta_scale.getSelection() / 100.0;				
 		
 				ImageData imageR = new ImageData(ancho, altura, imageA.getImageData().depth, imageB.getImageData().palette);
-				int opc=combo.getSelectionIndex();
+				int opc = combo.getSelectionIndex();
+				
 				boolean chunkMatrix[][] = new boolean[cols][rows];
+				
+				for(int i = 0; i < rows; i++) {
+					for(int j = 0; j < cols; j++) {
+						chunkMatrix[j][i] = false;
+						System.out.print(chunkMatrix[j][i] + " ");
+					}
+					System.out.println();
+				}
 				int chunkCounter = cols * rows;
 				int hilos = sp_hilos.getSelection();
 				ImageOperator ops[] = new ImageOperator[hilos]; 
