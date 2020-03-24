@@ -4,7 +4,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
-import Img.opChunks.ImageOperator;
+import img.mutex.Bakery;
+import img.mutex.ImageOperator;
+import img.mutex.Lock;
 
 import org.eclipse.swt.widgets.Label;
 
@@ -16,10 +18,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Scale;
 
 
 public class MainWindow {
@@ -27,6 +31,9 @@ public class MainWindow {
 	protected Shell shell;
 	protected Spinner spinnerCols;
 	protected Spinner spinnerRows;
+	protected Scale beta_scale;
+	protected Scale alpha_scale;
+	protected Spinner sp_hilos;
 	String[] filtro = { "*.jpg", "*.png"};
 	Image imageA = new Image(Display.getDefault(), 1, 1);
 	Image imageB = new Image(Display.getDefault(), 1, 1);
@@ -67,6 +74,7 @@ public class MainWindow {
 		shell.setSize(804, 528);
 		shell.setText("SWT Application");
 		GridLayout gl_shell = new GridLayout(3, false);
+		gl_shell.marginBottom = 5;
 		gl_shell.marginTop = 0;
 		gl_shell.marginHeight = 0;
 		gl_shell.horizontalSpacing = 20;
@@ -142,10 +150,22 @@ public class MainWindow {
 				System.out.println("Operacion");
 				int cols = spinnerCols.getSelection();
 				int rows = spinnerRows.getSelection();
-				ImageOperator operator = new ImageOperator(imageA, imageB, cols,rows);
+				int ancho = Math.min(imageA.getImageData().width, imageB.getImageData().width);
+				int altura = Math.min(imageA.getImageData().height, imageB.getImageData().height);
+				double alpha = alpha_scale.getSelection() / 100.0;
+				double beta = beta_scale.getSelection() / 100.0;				
+		
+				ImageData imageR = new ImageData(ancho, altura, imageA.getImageData().depth, imageB.getImageData().palette);
 				int opc=combo.getSelectionIndex();
-				operator.procesar(opc+1);
-
+				boolean chunkMatrix[][] = new boolean[cols][rows];
+				int chunkCounter = cols * rows;
+				int hilos = sp_hilos.getSelection();
+				ImageOperator ops[] = new ImageOperator[hilos]; 
+				Lock lock = new Bakery(hilos);
+				for(int i=0; i<hilos; i++) {
+					ops[i] = new ImageOperator(i, imageA, imageB, imageR, ancho, altura, cols,rows, alpha, beta, lock, opc, chunkMatrix, chunkCounter);
+					ops[i].start();
+				}
 			    Dialogo d = new Dialogo(shell);	    
 			    d.open();
 			}
@@ -211,5 +231,29 @@ public class MainWindow {
 		spinnerRows.setMaximum(10);
 		spinnerRows.setMinimum(1);
 		spinnerRows.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblNewLabel_3 = new Label(shell, SWT.NONE);
+		lblNewLabel_3.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		lblNewLabel_3.setText("Hilos:");
+		
+		Label alpha_label = new Label(shell, SWT.NONE);
+		alpha_label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		alpha_label.setText("Alpha");
+		
+		alpha_scale = new Scale(shell, SWT.NONE);
+		alpha_scale.setSelection(50);
+		alpha_scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		sp_hilos = new Spinner(shell, SWT.BORDER);
+		sp_hilos.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		sp_hilos.setMinimum(1);
+		
+		Label beta_label = new Label(shell, SWT.NONE);
+		beta_label.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		beta_label.setText("Beta");
+		
+		beta_scale = new Scale(shell, SWT.NONE);
+		beta_scale.setSelection(50);
+		beta_scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 	}
 }
